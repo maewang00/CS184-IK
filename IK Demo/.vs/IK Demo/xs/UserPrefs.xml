@@ -1,0 +1,18 @@
+﻿<Properties StartupConfiguration="{5C1B4AA0-6F0F-E0A5-272A-6CABB98908B1}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Scene2/RedBallManMovement.cs">
+    <Files>
+      <File FileName="Assets/Scripts/Scene1/RedBallMovement.cs" Line="44" Column="73" />
+      <File FileName="Assets/Scripts/Scene2/ManAlignmentToRedBalls.cs" Line="22" Column="2" />
+      <File FileName="Assets/Scripts/Scene1/IKscene1.cs" Line="83" Column="9" />
+      <File FileName="Assets/Scripts/Scene2/IKscene2.cs" Line="20" Column="32" />
+      <File FileName="Assets/Scripts/Scene2/RedBallManMovement.cs" Line="80" Column="14" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="fc3c2bbb-5b17-416f-8f47-d4c51cdf2c99" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
