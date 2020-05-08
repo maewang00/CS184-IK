@@ -72,17 +72,67 @@
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section II: Results</h1>
 
+<div align="middle">
+  <table>
+    <tr>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1GP8BQuczr64PbzZkcIVCqwPOFpdOjeV5/preview" width="584"
+          height="353"></iframe>
+        <figcaption align="center">Full walk cycle</figcaption>
+      </td>
+  </table>
+</div>
+
+<p>
+  In the video above, we see our humanoid with a fully animated walk cycle, controlled using WASD keys in Unity. The walk cycle is animated using four red spheres which are the end effectors for each of the limbs.
+  Colliders are enabled on the objects to allow the humanoid to interact with the environment.
+</p>
+
+<div align="middle">
+  <table>
+    <tr>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1_PT2PAlVxacz-Fv3yuCvHwQg4cxHCdlL/preview" width="584"
+          height="353"></iframe>
+        <figcaption align="center">Manual arm control</figcaption>
+      </td>
+  </table>
+</div>
+
+<p>
+  The demo above shows a manual manipulation of the arm by controlling the end effector (red sphere). As we can see, the arm has a full range of motion and the elbow bends accordingly.
+  We also incorporated Unity's physics engine, allowing the humanoid to push the capsule away.
+</p>
+
+<div align="middle">
+  <table>
+    <tr>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1WuWUkG7PHj1QdFv2-YXrUNF4_zy2Q8wu/preview" width="466"
+          height="282"></iframe>
+        <figcaption align="center">Our IK implementation</figcaption>
+      </td>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1pFvHE-IpAavnEFxB9lE9tzfMqmcZtUjm/preview" width="466"
+          height="282"></iframe>
+        <figcaption align="center">FastIKFabrik Implementation</figcaption>
+      </td>
+  </table>
+</div>
+
+<p>
+  Above, we have a side-by-side comparison of the humanoid controlled using our IK system and FastIKFabrik, an existing
+  IK library based on this <a href="http://andreasaristidou.com/FABRIK.html">paper</a> which we used as a baseline.
+  The primary difference we can see is that the leg positions are inverted in the FastIKFabrik example due to implementation differences.
+  However, other than that, the two simulations are quite similar which was our ultimate goal.
+</p>
 
 <br><br>
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section III: Resources</h1>
 
 <p>
-  We will be starting from an existing piece of code/system. Unity3D provides a built-in list of functions particularly for inverse kinematics. In essense, we will reinvent and improve on these functions. <br><br>Unity IK documentation: https://docs.unity3d.com/Manual/InverseKinematics.html
-</p>
-
-<p>
-  We will be using our personal computers and using Unity’s engine to make the animation. Our resource links distill into two categories: practical and theoretical information. YouTube videos for example give us a practical sense of how to approach Unity and use its platform while papers and articles give us a more solid theoretical understanding in how to calculate inverse kinematics.
+  Our resource links distill into two categories: practical and theoretical information. YouTube videos gave us a practical sense of how to approach Unity and use its platform while the papers and articles gave us a more solid theoretical understanding in how to perform the joint calculations.
 </p>
 
 
