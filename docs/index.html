@@ -21,7 +21,7 @@
     line-height: 22px;
   }
 
-  p {
+  p, li {
     font-family: 'Times New Roman', sans-serif;
     padding-bottom: 10px; 
     font-size: 18px;
@@ -52,22 +52,90 @@
       A path-defined 3D robotic simulation utilizing inverse kinematics as a physics-based animation tool. The inverse kinematics function defines joint angles to achieve a desired skeletal pose, position, or rotation in a three-dimensional space to generate realistic movements. We will develop and implement on the Unity3D platform, overriding (and potentially improving) the development engine's current built-in functions for inverse kinematics.
     </p>
     <p>
-      Our topic involves implementing inverse kinematics (IK) on a real-time development platform to simulate movement for an articulated skeleton robot. 
+      Our topic involves implementing inverse kinematics (IK) on a real-time development platform to simulate movement for an articulated skeleton robot. We compare our IK implementation to another implementation approaches to observe differences and evaluate the quality of our approach. Overall, our geometrical approach is adept, as comparisons reveal little performance differences for 2-chained systems.
     </p>
     <p>
-      With this mechanism implemented, we will be able to define animation as where the skeletal system should be rather than how the system should move. This way, we can execute complex motions dynamically that are often used for real time/premade simulations and graphical games.
-    </p>
-    <p>
-      ile there are mathematical models for inverse kinematics readily defined, anticipated challenges include transcribing these models into executable code, understanding how to use Unity3D as a visual and development platform, and including additions (e.g. machine learning-based solutions to external forces or input for stylized motion) that will make movement more realistic and robust.
-    </p>
-    <p>
-      Given that there are many useful resources for inverse kinematics and Unity documentation online, we will be able to understand how to implement inverse kinematics on Unity3D. For implementing additional features, reading research papers on inverse kinematics optimizations should be sufficient.
+      With this mechanism implemented, we define animation as setting target points for the skeletal system rather than how the system should move. This way, we can execute complex motions dynamically that are often used for real time/premade simulations and graphical games.
     </p>
 <br><br>
 
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section I: Technical approach</h1>
+    <p>
+      Our inverse kinematics solver worked by providing three main functionalities—planar tracking, rotation and orientation—on a 2 rotational joint system to calculate the correct joint angles so that the system’s end effector reaches the target destination. We implemented each of the features on a robot arm first before applying constraints onto a humanoid body.
+    </p>
 
+    <h3>Planar Tracking</h3>
+    <p>
+      To achieve planar tracking, given a robot arm with 2-degrees of freedom on 2 rotational joints, we derived a formula using law of cosines to calculate joint angles given a target position. The formulas for the two joints are as follows: 
+    </p>
+    <div align="middle">
+      <img src="images/1.png" align= "middle" width="600px"/>
+    </div>
+    <div align="middle">
+      <img src="images/2.png" align= "middle" width="600px"/>
+      <figcaption align="middle">gamma = atan(target.position.y - hinge.position.y , |target.position.x - hinge.position.x|)</figcaption>
+      <figcaption align="middle">jointangle0 = alpha + gamma</figcaption>
+      <figcaption align="middle">jointangle1 = beta</figcaption>
+    </div>
+    <h3>Rotation</h3>
+    <p>
+      With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to orient itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
+    </p>
+    <div align="middle">
+      <img src="images/3.png" align= "middle" width="600px"/>
+      <figcaption align="middle">theta = atan(target.position.z - hinge.position.z, target.position.x - hinge.position.x)</figcaption>
+    </div>
+    <p>
+      We calculate the amount of rotation needed by measuring the angle formed from the change in depth and the change in width. We also adjust the planar tracking to calculate the angles by using the length of change along the x-z dimension instead of just the x dimension and using xyz magnitude instead of xy since the x-y delta values are no longer sufficient to measure length in the system.
+    </p>
+    <p>
+      In our rotation design, a limitation is that only the hinge joint rotates. If we were to add rotational ability on both joints, we would have to slightly alter our planar tracking system to work with non-planar triangles. More troublesome for our solver, with bilateral 3D rotators, there is no clear deterministic method describing which joint should rotate first and how much it should rotate. Those variables would drastically alter the movement of the arm and would have to be highly tuned and dynamically dependent on specific positions and motions, significantly increasing complexity while adding very little to animating a humanoid walking.
+    </p>
+    <h3>Orientation</h3>
+    <p>
+      With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down, and the forearm points up.
+    </p>
+    <div align="middle">
+      <img src="images/4.png" align= "middle" width="600px"/>
+      <figcaption align="middle">
+        Solve Planar Tracker except replace `atan = Mathf.Atan2(diff.y, -xz.magnitude) * Mathf.Rad2Deg` (quadrant change)
+      </figcaption>
+      <figcaption align="middle">
+        Rotate to actual target `hinge.EulerAngle.y = <z - rotation> + 180`
+      </figcaption>
+    </div>
+    <p>
+      We achieve orientability by creating a temporary point that is the target point flipped around the y-axis. We then rotate the arm by 180 degrees, giving us an arm that reaches its target except in a different orientation. 
+    </p>
+
+    <h3>Why This Method?</h3>
+    <p>
+      There are multiple ways to solve inverse kinematics including using first order approximations and heuristic methods in addition to the geometric approach that we took. We researched each of those types of solvers and chose the geometric approach for its effectiveness and controllability.
+    </p>
+    <p>
+      The most common method of implementing IK is using a first order approximation with the Jacobian to calculate how each of the joint angles should change to reach the target point. Computationally, this method requires numerical techniques like calculating the pseudoinverse with the Jacobian’s SVD since it (3 x 2 in this case) is not invertible (nor is it usually invertible for IK). Implementing this method would allow us to add additional joints and degrees of freedom, but adding constraints and tie breakers to this implementation is much trickier, disqualifying it as solver for our use case.
+
+    </p>
+    <p>
+      Another technique is the use of constrained optimization programs to minimize the cost between our end effector with the target point with constraints. The optimization problem can then be solved using Lagrangian multipliers, but the overhead cost of learning how to make these programs effectively on top of animation made it implementation-wise less attractive as a solution to our project.
+    </p>
+    <p>
+      Beyond numerical methods, we also researched into heuristic based methods like Cyclic Coordinate Descent and FABRIK. We were particularly interested in FABRIK, an iterative algorithm that would repeatedly adjust joint angles backwards and forwards until the end effector reached the target or for a limited number of iterations. FABRIK is interesting because it adjusts the joints closest to the end effector the most. Indeed, we actually flipped this strategy for our IK solver and drew inspiration from FABRIK. FABRIK is also very fast, but since there was never a need for more than 2 joints, we felt that FABRIK was excessive in behavior.
+    </p>
+    <p>
+      An analytic method through geometry was particularly attractive for this project because it is a good primer to get orientated around animation and kinematics without imposing secondary implementation issues that might restrict project progress. In addition, an analytic method is deterministic, and with a comprehensive understanding of how the system worked, we were able to write constraints and specify more precise behavior—something we might not have been able to do with numerical methods that might’ve chosen any number of configurations as the solution. A downside with taking the analytic approach is that it is impractical if we wanted to extend the system to more joints.
+    </p>
+    <h3>General Implementation Challenges</h3>
+    <p>
+      We found it quite difficult to debug our code since we had to consider faults in our environment setup on top of implementation errors in our script. One specific challenge we had was with object hierarchies within Unity. When testing our fully controllable humanoid with its walk cycle animation, we discovered that upon rotating the character, our IK system started to behave unexpectedly. It turned out that our implementation was working properly but an incorrect hierarchy of our target points was causing the coordinate systems to be out of sync relative to the character when it was rotated.
+    </p>
+    <h3><mark>Lessons Learned</mark></h3>
+    <p>
+      <!-- <li>A 1-2 page summary of your technical approach, techniques used, algorithms implemented, etc. (use references to papers or other resources for further detail). Highlight how your approach varied from the references used (did you implement a subset, or did you change or enhance anything), the unique decisions you made and why.</li>
+      <li>A description of problems encountered and how you tackled them.</li>
+      <li>A description of lessons learned.</li> -->
+    </p>
 <br><br>
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section II: Results</h1>
@@ -125,6 +193,11 @@
   IK library based on this <a href="http://andreasaristidou.com/FABRIK.html">paper</a> which we used as a baseline.
   The primary difference we can see is that the leg positions are inverted in the FastIKFabrik example due to implementation differences.
   However, other than that, the two simulations are quite similar which was our ultimate goal.
+</p>
+
+<h3>Application to Walking </h3>
+<p>
+  For our humanoid walk animation, we created a pair of arms and legs and attached them on a body. The arms were set up with rotation and orientation on because arms can freely rotate about when in front of the body and have a different orientation from legs. However, since shoulder joints cannot freely move past a certain point, we added constraints to stop rotation and movement of the arm. The legs were configured with rotation and orientation off. While feet do not have to move in a parallel line while walking, we found the rigging for the animation to be easier and imposed the rotation restriction.
 </p>
 
 <br><br>
