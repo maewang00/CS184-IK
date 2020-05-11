@@ -78,6 +78,9 @@
       <figcaption align="middle">jointangle0 = alpha + gamma</figcaption>
       <figcaption align="middle">jointangle1 = beta</figcaption>
     </div>
+    <p>
+      We also had to account for the case where the target point is out of reach of arm, in which case we fully extend the joint toward the target point. Furthermore, we encountered an issue due to a quirk of Unity's axes system so we had to offset our calculations by 90 degrees.
+    </p>
     <h3>Rotation</h3>
     <p>
       With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to orient itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
@@ -129,6 +132,7 @@
     <h3>General Implementation Challenges</h3>
     <p>
       We found it quite difficult to debug our code since we had to consider faults in our environment setup on top of implementation errors in our script. One specific challenge we had was with object hierarchies within Unity. When testing our fully controllable humanoid with its walk cycle animation, we discovered that upon rotating the character, our IK system started to behave unexpectedly. It turned out that our implementation was working properly but an incorrect hierarchy of our target points was causing the coordinate systems to be out of sync relative to the character when it was rotated.
+      To solve this issue, we needed to reorganize the hierarchies of our objects in Unity and use local positions (which use coordinates relative to our primary object) in our calcuations.
     </p>
     <h3><mark>Lessons Learned</mark></h3>
     <p>
