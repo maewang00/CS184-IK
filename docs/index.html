@@ -25,7 +25,7 @@
     font-family: 'Times New Roman', sans-serif;
     padding-bottom: 10px; 
     font-size: 18px;
-    line-height: 40px;
+    line-height: 30px;
   }
 </style>
 
@@ -43,7 +43,7 @@
 	Jason Xu, Mae Wang, and Yowsean Li
 </p>
 
-<div align="middle"><img src="images/MecanimIKGrabbing.jpg" align= "middle" width="900px"/></div>
+<div align="middle"><img src="images/MecanimIKGrabbing.jpg" align= "middle" width="800px"/></div>
 
 <br><br>
 
@@ -70,10 +70,10 @@
       To achieve planar tracking, given a robot arm with 2-degrees of freedom on 2 rotational joints, we derived a formula using law of cosines to calculate joint angles given a target position. The formulas for the two joints are as follows: 
     </p>
     <div align="middle">
-      <img src="images/1.png" align= "middle" width="600px"/>
+      <img src="images/1.png" align= "middle" width="400px"/>
     </div>
     <div align="middle">
-      <img src="images/2.png" align= "middle" width="600px"/>
+      <img src="images/2.png" align= "middle" width="400px"/>
       <figcaption align="middle">gamma = atan(target.position.y - hinge.position.y , |target.position.x - hinge.position.x|)</figcaption>
       <figcaption align="middle">jointangle0 = alpha + gamma</figcaption>
       <figcaption align="middle">jointangle1 = beta</figcaption>
@@ -86,7 +86,7 @@
       With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to orient itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
     </p>
     <div align="middle">
-      <img src="images/3.png" align= "middle" width="600px"/>
+      <img src="images/3.png" align= "middle" width="300px"/>
       <figcaption align="middle">theta = atan(target.position.z - hinge.position.z, target.position.x - hinge.position.x)</figcaption>
     </div>
     <p>
@@ -100,7 +100,7 @@
       With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down, and the forearm points up.
     </p>
     <div align="middle">
-      <img src="images/4.png" align= "middle" width="600px"/>
+      <img src="images/4.png" align= "middle" width="400px"/>
       <figcaption align="middle">
         Solve Planar Tracker except replace `atan = Mathf.Atan2(diff.y, -xz.magnitude) * Mathf.Rad2Deg` (quadrant change)
       </figcaption>
@@ -134,15 +134,26 @@
       We found it quite difficult to debug our code since we had to consider faults in our environment setup on top of implementation errors in our script. One specific challenge we had was with object hierarchies within Unity. When testing our fully controllable humanoid with its walk cycle animation, we discovered that upon rotating the character, our IK system started to behave unexpectedly. It turned out that our implementation was working properly but an incorrect hierarchy of our target points was causing the coordinate systems to be out of sync relative to the character when it was rotated.
       To solve this issue, we needed to reorganize the hierarchies of our objects in Unity and use local positions (which use coordinates relative to our primary object) in our calcuations.
     </p>
-    <h3><mark>Lessons Learned</mark></h3>
+    <h3>Lessons Learned</h3>
     <p>
-      <!-- <li>A 1-2 page summary of your technical approach, techniques used, algorithms implemented, etc. (use references to papers or other resources for further detail). Highlight how your approach varied from the references used (did you implement a subset, or did you change or enhance anything), the unique decisions you made and why.</li>
-      <li>A description of problems encountered and how you tackled them.</li>
-      <li>A description of lessons learned.</li> -->
+      From our work for this project we learned several things. Firstly, animation is difficult, especially with precise movements.
+      It was particularly difficult to get our animation to look realistic since we had to animate our target points by hand in Unity, rather than having a reference from actual real-world movements.
+      We also learned that inverse kinematics is great for automating generic movements as in a robotic arm with full freedom, but is less appropriate for specialized, constrained movement without adding much more complexity.
+      Lastly, we discovered that our analytical geometry approach for deriving the joint parameters was great for our use case since it was very conceptually straightforward, but may be limited in its extension to appendages with more than two joints.
     </p>
 <br><br>
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section II: Results</h1>
+
+<h3>Application to Walking </h3>
+<p>
+  For our humanoid walk animation, we created a pair of arms and legs and attached them on a body. The arms were set up
+  with rotation and orientation on because arms can freely rotate about when in front of the body and have a different
+  orientation from legs. However, since shoulder joints cannot freely move past a certain point, we added constraints to
+  stop rotation and movement of the arm. The legs were configured with rotation and orientation off. While feet do not
+  have to move in a parallel line while walking, we found the rigging for the animation to be easier and imposed the
+  rotation restriction.
+</p>
 
 <div align="middle">
   <table>
@@ -193,15 +204,31 @@
 </div>
 
 <p>
-  Above, we have a side-by-side comparison of the humanoid controlled using our IK system and FastIKFabrik, an existing
+  Above, we have a side-by-side comparison of the humanoid's walk cycle controlled using our IK system and FastIKFabrik, an existing
   IK library based on this <a href="http://andreasaristidou.com/FABRIK.html">paper</a> which we used as a baseline.
   The primary difference we can see is that the leg positions are inverted in the FastIKFabrik example due to implementation differences.
   However, other than that, the two simulations are quite similar which was our ultimate goal.
 </p>
 
-<h3>Application to Walking </h3>
+<div align="middle">
+  <table>
+    <tr>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1-eiB-BR6RK4o7vj2GfYe9Lg2ACgqYmxo/preview" width="466"
+          height="282"></iframe>
+        <figcaption align="center">Our IK implementation</figcaption>
+      </td>
+      <td>
+        <iframe src="https://drive.google.com/file/d/1L2WMmLp0sxOyVTHmSHQh7OVRfgEiu5oW/preview" width="466"
+          height="282"></iframe>
+        <figcaption align="center">FastIKFabrik Implementation</figcaption>
+      </td>
+  </table>
+</div>
 <p>
-  For our humanoid walk animation, we created a pair of arms and legs and attached them on a body. The arms were set up with rotation and orientation on because arms can freely rotate about when in front of the body and have a different orientation from legs. However, since shoulder joints cannot freely move past a certain point, we added constraints to stop rotation and movement of the arm. The legs were configured with rotation and orientation off. While feet do not have to move in a parallel line while walking, we found the rigging for the animation to be easier and imposed the rotation restriction.
+  Here, we have a comparison of arm movement between our IK system and FastIKFabrik.
+  As we can see, the constraint options that we added to our system greatly improve the realism of the elbow movements as it simulates the constraints of the human elbow.
+  With FastIKFabrik, we have a completely free joint which moves awkwardly in certain positions with regards to the mechanical feasibility of an actual human arm.
 </p>
 
 <br><br>
@@ -211,17 +238,17 @@
 <p>
   Our resource links distill into two categories: practical and theoretical information. YouTube videos gave us a practical sense of how to approach Unity and use its platform while the papers and articles gave us a more solid theoretical understanding in how to perform the joint calculations.
 </p>
-
-
 <ul>
-  <li><p>https://www.alanzucconi.com/2018/05/02/ik-2d-2/</p></li>
-  <li><p>https://www.youtube.com/watch?v=qqOAzn05fvk</p></li>
-  <li><p>https://old.cescg.org/CESCG-2002/LBarinka/paper.pdf</p></li>
-  <li><p>http://www-inst.cs.berkeley.edu/~cs184/fa11/resources/ik_soln.pdf</p></li>
-  <li><p>http://billbaxter.com/courses/290/html/img0.htm </p></li>
-  <li><p>https://robotacademy.net.au/masterclass/inverse-kinematics-and-robot-motion/?lesson=256</p></li>
-  <li><p>https://medium.com/unity3danimation/create-your-own-ik-in-unity3d-989debd86770</p></li>
-  <li><p>https://www.youtube.com/watch?v=X5Z7ZJ39zAA&list=LLHNtH40gMNB9t2dMs0hhVlQ&index=2&t=7s</p></li>
+  <p>
+    <li>https://www.alanzucconi.com/2018/05/02/ik-2d-2/</li>
+    <li>https://www.youtube.com/watch?v=qqOAzn05fvk</li>
+    <li>https://old.cescg.org/CESCG-2002/LBarinka/paper.pdf</li>
+    <li>http://www-inst.cs.berkeley.edu/~cs184/fa11/resources/ik_soln.pdf</li>
+    <li>http://billbaxter.com/courses/290/html/img0.htm </li>
+    <li>https://robotacademy.net.au/masterclass/inverse-kinematics-and-robot-motion/?lesson=256</li>
+    <li>https://medium.com/unity3danimation/create-your-own-ik-in-unity3d-989debd86770</li>
+    <li>https://www.youtube.com/watch?v=X5Z7ZJ39zAA&list=LLHNtH40gMNB9t2dMs0hhVlQ&index=2&t=7s</li>
+  </p>
 </ul>
 <br><br>
 <!------------------------------------------------------------------------------------------------------------------------------------->
