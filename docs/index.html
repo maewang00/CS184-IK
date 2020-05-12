@@ -55,13 +55,10 @@
 
 <h2 align="middle">Abstract</h2>
     <p>
-      A path-defined 3D robotic simulation utilizing inverse kinematics as a physics-based animation tool. The inverse kinematics function defines joint angles to achieve a desired skeletal pose, position, or rotation in a three-dimensional space to generate realistic movements. We developed and implemented on the Unity3D platform, overriding the development engine's current built-in functions for inverse kinematics.
+      Inverse kinematics techniques solve for joint angles to achieve a desired skeletal pose, position, or rotation in a three-dimensional space with awareness of realistic movements and is often used for real-time/pre-made simulations, movies and graphical games. In this project, we developed and implemented a geometric solver on the Unity3D platform, overriding the development engine's current built-in functions for inverse kinematics. 
     </p>
     <p>
-      Our topic involves implementing inverse kinematics (IK) on a real-time development platform to simulate movement for an articulated skeleton robot. We compare our IK implementation to another implementation approach to observe differences and evaluate the quality of our approach. Overall, our geometric approach is adequate, as comparisons reveal little performance differences for 2-chained systems.
-    </p>
-    <p>
-      With this mechanism implemented, we define animation as setting target points for the skeletal system rather than defining how the system should move (forward kinematics). This way, we can execute complex motions quickly and dynamically. IK is often used for real-time/pre-made simulations, movies, and graphical games.
+      Our approach relies on geometric calculations—both in 2D and 3D—to calculate joint angles and allows for position tracking in 3D, letting us define animation as setting target points for the skeletal system rather than defining how the system should move (forward kinematics). We compare our IK implementation to another implementation approach to observe differences and evaluate the quality of our approach. Overall, our geometric approach presents an adequate IK solver, as comparisons reveal little performance differences for 2-chained systems.
     </p>
 <br><br>
 
@@ -89,21 +86,21 @@
     </p>
     <h3>Rotation</h3>
     <p>
-      With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to orient itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
+      With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to rotate itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
     </p>
     <div align="middle">
       <img src="images/3.png" align= "middle" width="300px"/>
       <figcaption align="middle">theta = atan(target.position.z - hinge.position.z, target.position.x - hinge.position.x)</figcaption>
     </div>
     <p>
-      We calculate the amount of rotation needed by measuring the angle formed from the change in depth and the change in width. We also adjust the planar tracking to calculate the angles by using the length of change along the x-z dimension instead of just the x dimension and using xyz magnitude instead of xy since the x-y delta values are no longer sufficient to measure length in the system.
+      We calculate the amount of rotation needed by measuring the angle formed from the change in depth and the change in width. We also adjust the planar tracking to calculate the angles by using the length of change along the x-z dimension instead of just the x dimension and using xyz magnitude instead of xy since the x-y delta values only capture 2D length.
     </p>
     <p>
       In our rotation design, a limitation is that only the hinge joint rotates. If we were to add rotational ability on both joints, we would have to slightly alter our planar tracking system to work with non-planar triangles. More troublesome for our solver, with bilateral 3D rotators, there is no clear deterministic method describing which joint should rotate first and how much it should rotate. Those variables would drastically alter the movement of the arm and would have to be highly tuned and dynamically dependent on specific positions and motions, significantly increasing complexity while adding very little to animating a humanoid walking.
     </p>
     <h3>Orientation</h3>
     <p>
-      With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down, and the forearm points up.
+      With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down with the forearm pointing up.
     </p>
     <div align="middle">
       <img src="images/4.png" align= "middle" width="400px"/>
@@ -111,7 +108,7 @@
         Solve Planar Tracker except replace `atan = Mathf.Atan2(diff.y, -xz.magnitude) * Mathf.Rad2Deg` (quadrant change)
       </figcaption>
       <figcaption align="middle">
-        Rotate to actual target `hinge.EulerAngle.y = <z - rotation> + 180`
+        Rotate to actual target `hinge.EulerAngle.y = [z - rotation] + 180`
       </figcaption>
     </div>
     <p>
@@ -123,14 +120,14 @@
       There are multiple ways to solve inverse kinematics including using first order approximations and heuristic methods in addition to the geometric approach that we took. We researched each of those types of solvers and chose the geometric approach for its effectiveness and controllability.
     </p>
     <p>
-      The most common method of implementing IK is using a first order approximation with the Jacobian to calculate how each of the joint angles should change to reach the target point. Computationally, this method requires numerical techniques like calculating the pseudoinverse with the Jacobian’s SVD since it (3 x 2 in this case) is not invertible (nor is it usually invertible for IK). Implementing this method would allow us to add additional joints and degrees of freedom, but adding constraints and tie breakers to this implementation is much trickier, disqualifying it as solver for our use case.
+      The most common method of implementing IK is using a first order approximation with the Jacobian to calculate how each of the joint angles should change to reach the target point. Computationally, this method requires numerical techniques like calculating the pseudoinverse with the Jacobian’s SVD since it (3 x 2 in this case) is not invertible (nor is it usually invertible for IK). Implementing this method would allow us to add additional joints and degrees of freedom but is unclear as to exactly how to specify constraints and tie breakers, disqualifying it as solver for our use case.
 
     </p>
     <p>
       Another technique is the use of constrained optimization programs to minimize the cost between our end effector with the target point with constraints. The optimization problem can then be solved using Lagrangian multipliers, but the overhead cost of learning how to make these programs effectively on top of animation made it implementation-wise less attractive as a solution to our project.
     </p>
     <p>
-      Beyond numerical methods, we also researched into heuristic based methods like Cyclic Coordinate Descent and FABRIK. We were particularly interested in FABRIK, an iterative algorithm that would repeatedly adjust joint angles backwards and forwards until the end effector reached the target or for a limited number of iterations. FABRIK is interesting because it adjusts the joints closest to the end effector the most. Indeed, we actually flipped this strategy for our IK solver and drew inspiration from FABRIK. FABRIK is also very fast, but since there was never a need for more than 2 joints, we felt that FABRIK was excessive in behavior.
+      Beyond numerical methods, we also researched into heuristic based methods like Cyclic Coordinate Descent and FABRIK. We were particularly interested in FABRIK, an iterative algorithm that would repeatedly adjust joint angles backwards and forwards until the end effector reached the target or for a limited number of iterations. FABRIK is interesting because it adjusts the joints closest to the end effector the most. Indeed, we actually flipped this strategy for our IK solver and drew inspiration from FABRIK. FABRIK is also very fast, but since there was never a need for more than 2 joints, we felt that FABRIK was excessive in behavior and would not provide any better results.
     </p>
     <p>
       An analytic method through geometry was particularly attractive for this project because it is a good primer to get orientated around animation and kinematics without imposing secondary implementation issues that might restrict project progress. In addition, an analytic method is deterministic, and with a comprehensive understanding of how the system worked, we were able to write constraints and specify more precise behavior—something we might not have been able to do with numerical methods that might’ve chosen any number of configurations as the solution. A downside with taking the analytic approach is that it is impractical if we wanted to extend the system to more joints.
