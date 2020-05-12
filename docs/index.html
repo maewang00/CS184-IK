@@ -21,7 +21,7 @@
     line-height: 22px;
   }
 
-  p, li {
+  p, li, a {
     font-family: 'Times New Roman', sans-serif;
     padding-bottom: 10px; 
     font-size: 18px;
@@ -46,16 +46,22 @@
 <div align="middle"><img src="images/MecanimIKGrabbing.jpg" align= "middle" width="800px"/></div>
 
 <br><br>
+<div align="middle" >
+<a href="https://youtu.be/Ov4vEQYoJtc">Youtube: "Inverse Kinematics Project Video"</a>
+<br><br>
+<a href="https://docs.google.com/presentation/d/18hDaKYF98r0DhryaCSrzEnwOrEF45DoQZf5vcdfD1tQ/edit?usp=sharing">Slides</a>
+</div>
+<br>
 
 <h2 align="middle">Abstract</h2>
     <p>
-      A path-defined 3D robotic simulation utilizing inverse kinematics as a physics-based animation tool. The inverse kinematics function defines joint angles to achieve a desired skeletal pose, position, or rotation in a three-dimensional space to generate realistic movements. We will develop and implement on the Unity3D platform, overriding (and potentially improving) the development engine's current built-in functions for inverse kinematics.
+      A path-defined 3D robotic simulation utilizing inverse kinematics as a physics-based animation tool. The inverse kinematics function defines joint angles to achieve a desired skeletal pose, position, or rotation in a three-dimensional space to generate realistic movements. We developed and implemented on the Unity3D platform, overriding the development engine's current built-in functions for inverse kinematics.
     </p>
     <p>
-      Our topic involves implementing inverse kinematics (IK) on a real-time development platform to simulate movement for an articulated skeleton robot. We compare our IK implementation to another implementation approaches to observe differences and evaluate the quality of our approach. Overall, our geometrical approach is adept, as comparisons reveal little performance differences for 2-chained systems.
+      Our topic involves implementing inverse kinematics (IK) on a real-time development platform to simulate movement for an articulated skeleton robot. We compare our IK implementation to another implementation approach to observe differences and evaluate the quality of our approach. Overall, our geometric approach is adequate, as comparisons reveal little performance differences for 2-chained systems.
     </p>
     <p>
-      With this mechanism implemented, we define animation as setting target points for the skeletal system rather than how the system should move. This way, we can execute complex motions dynamically that are often used for real time/premade simulations and graphical games.
+      With this mechanism implemented, we define animation as setting target points for the skeletal system rather than defining how the system should move (forward kinematics). This way, we can execute complex motions quickly and dynamically. IK is often used for real-time/pre-made simulations, movies, and graphical games.
     </p>
 <br><br>
 
@@ -253,10 +259,23 @@
 <br><br>
 <!------------------------------------------------------------------------------------------------------------------------------------->
 <h1 align="middle">Section IV: Contributions</h1><br>
-<p>
-  
-</p>
+<h3>Jason Xu:</h3>
+<li></li>
+<br>
 
+
+<h3>Mae Wang:</h3>
+  <li>Introduced and implmented the current geometric approach for IK.</li>
+  <li>Animated all target objects in Unity3D.</li>
+  <li>Took charge of all Unity3D-related functionalities, such as setting up the Unity platform with needed assets and scripts/Unity "Git" collaboration, manual arm movement (WASD) for red object targets, basic input movement (arrow keys), building the robot's hierarchy and collision physics, and constructing environment and cameras.</li>
+  <li>Debugged tricky constraint bugs in 3D.</li>
+  <li>Produced all youtube videos for the project.</li>
+<br>
+
+
+<h3>Yowsean Li:</h3>
+<li></li>
+<br>
 
 </body>
 </html>
