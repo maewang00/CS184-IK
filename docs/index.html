@@ -89,21 +89,21 @@
     </p>
     <h3>Rotation</h3>
     <p>
-      With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to orient itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
+      With just planar tracking, the system has no awareness of a third dimension (i.e. depth) in space and would not be able to rotate itself to reach targets outside of x-y space. To allow for 3D rotation with the planar tracker, we rotate the arm so that it is planar with the target point. With the rotation, the planar tracker would then be able to adjust the joint angles.
     </p>
     <div align="middle">
       <img src="images/3.png" align= "middle" width="300px"/>
       <figcaption align="middle">theta = atan(target.position.z - hinge.position.z, target.position.x - hinge.position.x)</figcaption>
     </div>
     <p>
-      We calculate the amount of rotation needed by measuring the angle formed from the change in depth and the change in width. We also adjust the planar tracking to calculate the angles by using the length of change along the x-z dimension instead of just the x dimension and using xyz magnitude instead of xy since the x-y delta values are no longer sufficient to measure length in the system.
+      We calculate the amount of rotation needed by measuring the angle formed from the change in depth and the change in width. We also adjust the planar tracking to calculate the angles by using the length of change along the x-z dimension instead of just the x dimension and using xyz magnitude instead of xy since the x-y delta values only capture 2D length.
     </p>
     <p>
       In our rotation design, a limitation is that only the hinge joint rotates. If we were to add rotational ability on both joints, we would have to slightly alter our planar tracking system to work with non-planar triangles. More troublesome for our solver, with bilateral 3D rotators, there is no clear deterministic method describing which joint should rotate first and how much it should rotate. Those variables would drastically alter the movement of the arm and would have to be highly tuned and dynamically dependent on specific positions and motions, significantly increasing complexity while adding very little to animating a humanoid walking.
     </p>
     <h3>Orientation</h3>
     <p>
-      With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down, and the forearm points up.
+      With planar tracking and rotation, our system can calculate the correct angles given that the target is within the bounding sphere of radius L, where L is the sum of the total length of the robot arm. However, in some circumstances, we need to be able orientate the joints into different configurations. For example, on a leg, the quadricep raises the leg with the calf pointing down. Meanwhile, on an arm, the bicep part points down with the forearm pointing up.
     </p>
     <div align="middle">
       <img src="images/4.png" align= "middle" width="400px"/>
@@ -111,7 +111,7 @@
         Solve Planar Tracker except replace `atan = Mathf.Atan2(diff.y, -xz.magnitude) * Mathf.Rad2Deg` (quadrant change)
       </figcaption>
       <figcaption align="middle">
-        Rotate to actual target `hinge.EulerAngle.y = <z - rotation> + 180`
+        Rotate to actual target `hinge.EulerAngle.y = [z - rotation] + 180`
       </figcaption>
     </div>
     <p>
@@ -123,22 +123,27 @@
       There are multiple ways to solve inverse kinematics including using first order approximations and heuristic methods in addition to the geometric approach that we took. We researched each of those types of solvers and chose the geometric approach for its effectiveness and controllability.
     </p>
     <p>
-      The most common method of implementing IK is using a first order approximation with the Jacobian to calculate how each of the joint angles should change to reach the target point. Computationally, this method requires numerical techniques like calculating the pseudoinverse with the Jacobian’s SVD since it (3 x 2 in this case) is not invertible (nor is it usually invertible for IK). Implementing this method would allow us to add additional joints and degrees of freedom, but adding constraints and tie breakers to this implementation is much trickier, disqualifying it as solver for our use case.
+      The most common method of implementing IK is using a first order approximation with the Jacobian to calculate how each of the joint angles should change to reach the target point. Computationally, this method requires numerical techniques like calculating the pseudoinverse with the Jacobian’s SVD since it (3 x 2 in this case) is not invertible (nor is it usually invertible for IK) [9]. Implementing this method would allow us to add additional joints and degrees of freedom but is unclear as to exactly how to specify constraints and tie breakers, disqualifying it as solver for our use case.
 
     </p>
     <p>
-      Another technique is the use of constrained optimization programs to minimize the cost between our end effector with the target point with constraints. The optimization problem can then be solved using Lagrangian multipliers, but the overhead cost of learning how to make these programs effectively on top of animation made it implementation-wise less attractive as a solution to our project.
+      Another technique is the use of constrained optimization programs to minimize the cost between our end effector with the target point with constraints. The optimization problem can then be solved using Lagrange multipliers, but the overhead cost of learning how to make these programs effectively on top of animation made it implementation-wise less attractive as a solution to our project [10].
     </p>
     <p>
-      Beyond numerical methods, we also researched into heuristic based methods like Cyclic Coordinate Descent and FABRIK. We were particularly interested in FABRIK, an iterative algorithm that would repeatedly adjust joint angles backwards and forwards until the end effector reached the target or for a limited number of iterations. FABRIK is interesting because it adjusts the joints closest to the end effector the most. Indeed, we actually flipped this strategy for our IK solver and drew inspiration from FABRIK. FABRIK is also very fast, but since there was never a need for more than 2 joints, we felt that FABRIK was excessive in behavior.
+      Beyond numerical methods, we also researched into heuristic based methods like Cyclic Coordinate Descent and FABRIK. We were particularly interested in FABRIK, an iterative algorithm that would repeatedly adjust joint angles backwards and forwards until the end effector reached the target or for a limited number of iterations. FABRIK is interesting because it adjusts the joints closest to the end effector the most [3]. Indeed, we actually flipped this strategy for our IK solver and drew inspiration from FABRIK. FABRIK is also very fast, but since there was never a need for more than 2 joints, we felt that FABRIK was excessive in behavior and would not provide any better results.
     </p>
     <p>
-      An analytic method through geometry was particularly attractive for this project because it is a good primer to get orientated around animation and kinematics without imposing secondary implementation issues that might restrict project progress. In addition, an analytic method is deterministic, and with a comprehensive understanding of how the system worked, we were able to write constraints and specify more precise behavior—something we might not have been able to do with numerical methods that might’ve chosen any number of configurations as the solution. A downside with taking the analytic approach is that it is impractical if we wanted to extend the system to more joints.
+      An analytic method through geometry was particularly attractive for this project because it is a good primer to get orientated around animation and kinematics without imposing secondary implementation issues that might restrict project progress. In addition, an analytic method is deterministic, and with a comprehensive understanding of how the system worked, we were able to write constraints and specify more precise behavior—something we might not have been able to do with numerical methods that might’ve chosen any number of configurations as the solution [1]. A downside with taking the analytic approach is that it is impractical if we wanted to extend the system to more joints.
+      We did notice that there were many resources on 2D inverse kinematics using this method but not with 3D kinematics and so had to derive formulas that we belived best suited the system.
     </p>
     <h3>General Implementation Challenges</h3>
     <p>
       We found it quite difficult to debug our code since we had to consider faults in our environment setup on top of implementation errors in our script. One specific challenge we had was with object hierarchies within Unity. When testing our fully controllable humanoid with its walk cycle animation, we discovered that upon rotating the character, our IK system started to behave unexpectedly. It turned out that our implementation was working properly but an incorrect hierarchy of our target points was causing the coordinate systems to be out of sync relative to the character when it was rotated.
       To solve this issue, we needed to reorganize the hierarchies of our objects in Unity and use local positions (which use coordinates relative to our primary object) in our calcuations.
+    </p>
+    <p>
+      Another frequent challenge we encountered was verifying that our solution at any given time worked. We implemented each of the features without considering how it might impact the next feature. As a result, we were not able to abstract each of the features and instead had to frequently modify previously written code for another feature. To insure that the system would not break with new features, with every modification, we manually tested positions across 3D while also physically adjusting the entire model space to ensure that the correct coordinates were used. This method of constant back and forth slowed us down but helped insure correctness throughout the process.
+      In addition, whenever our system did break, it was a helpful reminder to go back to the drawing board and consider factors we did not consider. As a result, we were able to capture a lot of geometric errors.
     </p>
     <h3>Lessons Learned</h3>
     <p>
@@ -246,6 +251,7 @@
 </p>
 <ul>
   <p>
+<<<<<<< HEAD
     <li>https://www.alanzucconi.com/2018/05/02/ik-2d-2/</li>
     <li>http://andreasaristidou.com/FABRIK.html?fbclid=IwAR38vHruaHGVVFhEVL6v0tuG071loU-c0ZViw1XsYnjEAvtYnGxp62m16a4</li>
     <li>https://www.youtube.com/watch?v=qqOAzn05fvk</li>
@@ -255,6 +261,19 @@
     <li>https://robotacademy.net.au/masterclass/inverse-kinematics-and-robot-motion/?lesson=256</li>
     <li>https://medium.com/unity3danimation/create-your-own-ik-in-unity3d-989debd86770</li>
     <li>https://www.youtube.com/watch?v=X5Z7ZJ39zAA&list=LLHNtH40gMNB9t2dMs0hhVlQ&index=2&t=7s</li>
+=======
+    <li>[1] https://www.alanzucconi.com/2018/05/02/ik-2d-2/</li>
+    <li>[2] https://www.youtube.com/watch?v=qqOAzn05fvk</li>
+    <li>[3] http://andreasaristidou.com/FABRIK.html?fbclid=IwAR38vHruaHGVVFhEVL6v0tuG071loU-c0ZViw1XsYnjEAvtYnGxp62m16a4</li>
+    <li>[4] http://www-inst.cs.berkeley.edu/~cs184/fa11/resources/ik_soln.pdf</li>
+    <li>[5] http://billbaxter.com/courses/290/html/img0.htm </li>
+    <li>[6] https://robotacademy.net.au/masterclass/inverse-kinematics-and-robot-motion/?lesson=256</li>
+    <li>[7] https://medium.com/unity3danimation/create-your-own-ik-in-unity3d-989debd86770</li>
+    <li>[8] https://www.youtube.com/watch?v=X5Z7ZJ39zAA&list=LLHNtH40gMNB9t2dMs0hhVlQ&index=2&t=7s</li>
+    <li>[9] http://www.cs.cmu.edu/~15464-s13/lectures/lecture6/IK.pdf</li>
+    <li>[10] http://www-scf.usc.edu/~csci520/slides/InverseKin.pdf</li>
+    <li>[11] https://old.cescg.org/CESCG-2002/LBarinka/paper.pdf</li>
+>>>>>>> jason-suggests
   </p>
 </ul>
 <br><br>

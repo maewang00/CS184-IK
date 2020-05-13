@@ -6,27 +6,18 @@ using UnityEngine;
 public class IKscene1 : MonoBehaviour
 {
 
-    /// NOTE: Indices start from end to root (since this script is attached to the end-effector)
-    /// 
-    //  root
-    //  (joint[N]) (bonelen[N]) (joint[N-1]) (bonelen[N-1]) (joint[N-2])...
-    //   x--------------------x--------------------x---...
-
-
     #region publicVariables
-    /// Distance when the solver stops
-    public float Delta = 0.001f;
     /// Chain length of bones
     public int ChainLength = 2;
     /// Target the chain should bend to
     public Transform Target;
     /// Direction of rotation
     public bool Rotation;
-    //Orientation
+    ///Orientation
     public bool Orientation;
+    ///General Presets
     public bool isLeg = false;
     public bool isArm = false;
-
     #endregion
 
 
@@ -43,9 +34,6 @@ public class IKscene1 : MonoBehaviour
     protected float[] BonesLength;
     protected float Joint0Angle;
     protected float Joint1Angle;
-    //protected Vector3[] StartDirectionSucc;    
-    //protected Quaternion[] StartRotationBone;
-    //protected Quaternion StartRotationTarget;
     #endregion
 
 
@@ -54,12 +42,6 @@ public class IKscene1 : MonoBehaviour
 
     /// Strength of going back to the start position.
     /// Solver iterations per update
-    //public Transform Pole;
-    //public int Iterations = 10;
-    //[Range(0, 1)]
-    //public float SnapBackStrength = 1f;
-
-
     /// Start is called before the first frame update
     void Start()
     {
@@ -75,7 +57,6 @@ public class IKscene1 : MonoBehaviour
             Rotation = true;
             Orientation = true;
         }
-
 
         //Get position of the red ball
         //GameObject player = GameObject.Find("Player");
@@ -314,18 +295,18 @@ public class IKscene1 : MonoBehaviour
 
             // TODO When I no longer want to rotate, how should i rotate relative to y-axis?
 
-            // FIXME 1. if do-nothing, continue current angle about y.
+            // OPTION 1. if do-nothing, continue current angle about y.
             // Problematic when freezing rotation and continuing to change x,y,z position
             // mess up the lengths and triangle calculations. ie. arm won't follow ball anymore.
             // A possible fix would be to fix Euler0.y but change Euler1.y
 
-            // FIXME 2. force rotate to be flat along x-y plane.
+            // OPTION 2. force rotate to be flat along x-y plane.
             //if (Orientation)
             //{
             //    Euler0.y = 180f;
             //}
 
-            // FIXME 3. force no movement UNLESS parallel with x-y plane
+            // OPTION 3. force no movement UNLESS parallel with x-y plane
             if (Target.localPosition.x < 0 && isArm && Euler0.y % 180 != 0)
             {
                 return;
